@@ -1,4 +1,9 @@
 "use client";
+/** 
+* Ensure this page is always rendered client-side 
+* so hooks like useSearchParams() work without Suspense boundaries 
+*/
+export const dynamic = 'force-dynamic';
 
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
