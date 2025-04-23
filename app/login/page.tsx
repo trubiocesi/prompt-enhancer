@@ -51,7 +51,7 @@ export default function LoginPage() {
         <h1 className="text-2xl mb-6 text-center">Sign In</h1>
         <Auth
           supabaseClient={supabaseClient}
-          providers={[]}  /* e.g. ['github'] if you enable GitHub in Supabase */
+          providers={['github', 'google']}  /* e.g. ['github'] if you enable GitHub in Supabase */
           magicLink={true}
           appearance={{ theme: ThemeSupa }}
           theme="dark"
