@@ -2,29 +2,35 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { User, Session } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
 
 export default function AuthBar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // initial session
+    // Initial session load
     supabaseClient.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
     });
-    // subscribe to changes
+
+    // Subscribe to auth changes
     const {
-        data: { subscription },
-      } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-      });
-    return () => subscription.unsubscribe();
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((_, session: Session | null) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (!user) return null;
+
   return (
     <div className="fixed top-4 right-4 flex items-center space-x-2">
-      {user.user_metadata.avatar_url && (
+      {user.user_metadata?.avatar_url && (
         <Image
           src={user.user_metadata.avatar_url}
           alt="Avatar"

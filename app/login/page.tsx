@@ -4,34 +4,40 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Session } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const next   = params.get("next") || "/";
+  const nextPath = params.get("next") || "/";
 
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
-  // check existing session + subscribe
   useEffect(() => {
+    // Load existing session
     supabaseClient.auth.getSession().then(({ data }) => {
-      if (data.session) setSession(data.session);
+      setSession(data.session);
     });
+
+    // Subscribe to login/logout
     const {
-        data: { subscription },
-      } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-        // …
-      })
-    return () => subscription.unsubscribe();
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((_, newSession: Session | null) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // redirect once logged in
+  // Once we have a session, redirect
   useEffect(() => {
     if (session) {
-      router.replace(next);
+      router.replace(nextPath);
     }
-  }, [session, next, router]);
+  }, [session, nextPath, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base text-white">
@@ -39,7 +45,7 @@ export default function LoginPage() {
         <h1 className="text-2xl mb-6 text-center">Sign In</h1>
         <Auth
           supabaseClient={supabaseClient}
-          providers={["github", "google"]}
+          providers={[]}  /* or ['github','google'] if enabled */
           magicLink={true}
           appearance={{ theme: ThemeSupa }}
           theme="dark"
