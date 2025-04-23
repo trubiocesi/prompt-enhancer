@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* project‑wide tweaks */
+html {
+  @apply bg-base text-white scroll-smooth;
+}
