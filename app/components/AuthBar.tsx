@@ -1,26 +1,31 @@
+// app/components/AuthBar.tsx
 "use client";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { User, Session } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
 
 export default function AuthBar() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Initial session load
+    // 1) Load initial session
     supabaseClient.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
     });
 
-    // Subscribe to auth changes
+    // 2) Subscribe to auth changes
     const {
       data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_, session: Session | null) => {
-      setUser(session?.user ?? null);
-    });
+    } = supabaseClient.auth.onAuthStateChange(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (_event, session: Session | null) => {
+        setUser(session?.user ?? null);
+      }
+    );
 
+    // 3) Cleanup
     return () => {
       subscription.unsubscribe();
     };
@@ -49,3 +54,4 @@ export default function AuthBar() {
     </div>
   );
 }
+

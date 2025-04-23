@@ -1,10 +1,11 @@
+// app/login/page.tsx
 "use client";
 
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
 
 export default function LoginPage() {
@@ -12,27 +13,32 @@ export default function LoginPage() {
   const params = useSearchParams();
   const nextPath = params.get("next") || "/";
 
+  // ▶️ Use the proper Session type
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Load existing session
+    // 1️⃣ Load any existing session on mount
     supabaseClient.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
 
-    // Subscribe to login/logout
+    // 2️⃣ Subscribe to auth state changes
     const {
       data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_, newSession: Session | null) => {
-      setSession(newSession);
-    });
+    } = supabaseClient.auth.onAuthStateChange(
+      // name the param you use, ignore the event
+      (_event, newSession: Session | null) => {
+        setSession(newSession);
+      }
+    );
 
+    // 3️⃣ Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-  // Once we have a session, redirect
+  // 4️⃣ Redirect once we have a session
   useEffect(() => {
     if (session) {
       router.replace(nextPath);
@@ -45,7 +51,7 @@ export default function LoginPage() {
         <h1 className="text-2xl mb-6 text-center">Sign In</h1>
         <Auth
           supabaseClient={supabaseClient}
-          providers={[]}  /* or ['github','google'] if enabled */
+          providers={[]}  /* e.g. ['github'] if you enable GitHub in Supabase */
           magicLink={true}
           appearance={{ theme: ThemeSupa }}
           theme="dark"
