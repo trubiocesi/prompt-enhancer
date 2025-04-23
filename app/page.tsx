@@ -4,7 +4,6 @@ import { useState, useEffect  } from 'react';
 export default function Home() {
    const [raw, setRaw] = useState('');
    const [enhanced, setEnhanced] = useState('');
-   const [maxTokens, setMaxTokens] = useState(100);
    const [tones, setTones] = useState<string[]>(['cinematic']);
    const [noFluff,  setNoFluff]  = useState(false);
 
@@ -30,7 +29,7 @@ export default function Home() {
     const res = await fetch('/api/enhance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: raw, tones, maxTokens, noFluff }),
+      body: JSON.stringify({ prompt: raw, tones, noFluff }),
     });
     if (!res.ok) throw new Error('Enhance failed');
   
