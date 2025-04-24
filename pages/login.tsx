@@ -1,4 +1,3 @@
-// pages/login.tsx
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
