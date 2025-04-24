@@ -1,6 +1,6 @@
 "use client";
 
-// Forces everything under /login to be a client-only subtree.
+// Force everything under /login to be client‐only
 export default function LoginLayout({
   children,
 }: {
