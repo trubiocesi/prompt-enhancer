@@ -1,8 +1,9 @@
-import nextDynamic from "next/dynamic";  // ← give the import a different name
+"use client";
 
-export const dynamic = "force-dynamic";  // ← Next.js directive (keep this name)
+// Tell Next.js never to prerender this route
+export const dynamic = "force-dynamic";
 
-const LoginClient = nextDynamic(() => import("./LoginClient"), { ssr: false });
+import LoginClient from "./LoginClient";
 
 export default function Page() {
   return <LoginClient />;
