@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabaseClient } from "../lib/supabaseClient";
 
 interface HistoryEntry {
   raw: string;
