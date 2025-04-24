@@ -67,3 +67,8 @@ export default function LoginPage() {
     </div>
   );
 }
+
+// Force this page to render on the server at request time
+export async function getServerSideProps() {
+      return { props: {} };
+    }
