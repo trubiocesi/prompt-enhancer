@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -8,10 +8,15 @@ import type { Session } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
 
 export default function LoginClient() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const nextPath = params?.get("next") ?? "/";
+    const router = useRouter();
+    const [nextPath, setNextPath] = useState("/");
 
+
+      // read ?next= from window.location when the component mounts
+   useEffect(() => {
+     const params = new URLSearchParams(window.location.search);
+     setNextPath(params.get("next") || "/");
+   }, []);
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
