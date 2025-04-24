@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AuthBar from "./components/AuthBar";  // This is a client component
+import AuthBar from "./components/AuthBar";
 
-export const metadata = {
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
   title: "PromptForge",
   description: "Enhance your AI prompts effortlessly",
 };
@@ -13,9 +24,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        {/* AuthBar is a client boundary so it can use hooks */}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-base text-white`}
+      >
+        {/* Top-right profile / logout menu */}
         <AuthBar />
+        {/* Your page content */}
         {children}
       </body>
     </html>
