@@ -10,7 +10,7 @@ import { supabaseClient } from "../lib/supabaseClient";
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const nextPath = params.get("next") || "/";
+  const nextPath = params?.get("next") ?? "/";
 
   const [session, setSession] = useState<Session | null>(null);
 
