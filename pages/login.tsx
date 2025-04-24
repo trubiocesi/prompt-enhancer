@@ -1,15 +1,15 @@
 "use client";
 
+import { supabaseClient } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import type { Session } from "@supabase/supabase-js";
-import { supabaseClient } from "../lib/supabaseClient";
+
 
 export default function LoginPage() {
   const router = useRouter();
-  // nextPath may be a string array or undefined; normalize it
   const rawNext = router.query.next;
   const nextPath =
     typeof rawNext === "string" && rawNext.length > 0 ? rawNext : "/";
@@ -40,7 +40,7 @@ export default function LoginPage() {
         <h1 className="text-2xl mb-6 text-center">Sign In</h1>
         <Auth
           supabaseClient={supabaseClient}
-          providers={[]}
+          providers={['github','google']}
           magicLink
           appearance={{ theme: ThemeSupa }}
           theme="dark"
@@ -48,9 +48,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
-
-// Force Next.js to use Server-Side Rendering for this page
-export async function getServerSideProps() {
-  return { props: {} };
 }
