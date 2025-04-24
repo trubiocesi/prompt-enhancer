@@ -38,7 +38,7 @@ export default function LoginClient() {
         <h1 className="text-2xl mb-6 text-center">Sign In</h1>
         <Auth
           supabaseClient={supabaseClient}
-          providers={[]}  /* or ['github','google'] */
+          providers={['github', 'google']}  /* or ['github','google'] */
           magicLink={true}
           appearance={{ theme: ThemeSupa }}
           theme="dark"

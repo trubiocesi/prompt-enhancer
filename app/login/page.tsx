@@ -1,7 +1,9 @@
-"use client";
+import nextDynamic from "next/dynamic";  // ← give the import a different name
 
-import LoginClient from "./LoginClient";
+export const dynamic = "force-dynamic";  // ← Next.js directive (keep this name)
+
+const LoginClient = nextDynamic(() => import("./LoginClient"), { ssr: false });
 
 export default function Page() {
- return <LoginClient />;
+  return <LoginClient />;
 }
