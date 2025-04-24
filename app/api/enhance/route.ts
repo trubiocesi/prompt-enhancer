@@ -1,4 +1,3 @@
-// app/api/enhance/route.ts
 import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 

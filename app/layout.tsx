@@ -1,5 +1,3 @@
-// app/layout.tsx   (SERVER COMPONENT — no "use client" here)
-
 import "./globals.css";
 import AuthBar from "./components/AuthBar";  // This is a client component
 

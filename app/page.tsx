@@ -1,5 +1,3 @@
-// app/page.tsx  (Server Component)
-
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "../lib/supabaseServer";
 import HomeClient from "./page.client";

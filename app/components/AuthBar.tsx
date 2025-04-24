@@ -1,4 +1,3 @@
-// app/components/AuthBar.tsx
 "use client";
 
 import Image from "next/image";
