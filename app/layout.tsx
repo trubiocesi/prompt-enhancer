@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PromptForge",
-  description: "Enhance your AI prompts effortlessly",
+  description: "Turn rough ideas into laser-focused AI prompts",
 };
 
 export default function RootLayout({
@@ -25,11 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-base text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Top-right profile / logout menu */}
+        {/* ← AuthBar back in place */}
         <AuthBar />
-        {/* Your page content */}
         {children}
       </body>
     </html>

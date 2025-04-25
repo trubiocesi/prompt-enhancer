@@ -15,13 +15,11 @@ export default function HomeClient() {
   const [noFluff, setNoFluff] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
-  // Load history from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("promptHistory");
     if (stored) setHistory(JSON.parse(stored));
   }, []);
 
-  // Enhance button handler
   async function handleEnhance() {
     setEnhanced("");
     const res = await fetch("/api/enhance", {
@@ -30,10 +28,12 @@ export default function HomeClient() {
       body: JSON.stringify({ prompt: raw, tones, noFluff }),
     });
     if (!res.ok) throw new Error("Enhance failed");
+
     const reader = res.body!.getReader();
     const dec = new TextDecoder();
     let done = false,
       acc = "";
+
     while (!done) {
       const { value, done: dr } = await reader.read();
       done = dr;
@@ -42,7 +42,7 @@ export default function HomeClient() {
         setEnhanced(acc);
       }
     }
-    // Record in history
+
     const entry = { raw, enhanced: acc, timestamp: new Date().toISOString() };
     const newHist = [entry, ...history];
     setHistory(newHist);
@@ -53,144 +53,225 @@ export default function HomeClient() {
     <main className="min-h-screen flex flex-col items-center px-6">
       {/* ─── Hero ───────────────────────────────────────── */}
       <section className="relative w-full pt-28 pb-20 flex flex-col items-center text-center">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-accent/30 via-fuchsia-500/10 to-cyan-500/10 blur-3xl" />
+        <div
+          className="absolute inset-0 -z-10
+                     bg-gradient-to-br from-accent/30 via-fuchsia-500/10 to-cyan-500/10
+                     blur-3xl"
+        />
         <h1 className="text-5xl font-extrabold tracking-tight drop-shadow-lg">
           Prompt<span className="text-accent">Forge</span>
         </h1>
-        <p className="mt-4 max-w-xl text-lg text-gray-300">
+        {/* Darker tagline text in light mode */}
+        <p className="mt-4 max-w-xl text-lg text-light-text dark:text-gray-300">
           Turn rough ideas into laser-focused AI prompts with a single click.
         </p>
-      </section>
 
-      {/* ─── Prompt Card ────────────────────────────────── */}
-      <div className="w-full max-w-3xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 shadow-2xl">
-        {/* Templates Panel */}
-        <details className="w-full mb-4 group">
-          <summary className="flex items-center justify-between cursor-pointer rounded-lg bg-white/10 p-3 hover:bg-white/20 transition">
-            <span className="font-medium text-gray-200">Templates</span>
-            <svg
-              className="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </summary>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {[
-              { name: "Art", tpl: "{subject} {medium} {style} {lighting} {composition}" },
-              { name: "Story", tpl: "{protagonist} {goal} {conflict} {setting}" },
-              { name: "Code", tpl: "{language} script to {task} using {libraries}" },
-              { name: "Blog", tpl: "{topic} blog post with {tone} tone and {keywords}" },
-              { name: "Email", tpl: "Write an email to {recipient} about {subject}" },
-              {
-                name: "Ad",
-                tpl: "Create a marketing ad for {product} highlighting {benefits}",
-              },
-              { name: "Explain", tpl: "Explain {concept} as if teaching a beginner" },
-              { name: "Debug", tpl: "Debug the following code snippet: {code}" },
-              { name: "Translate", tpl: "Translate this text to {language}" },
-            ].map(({ name, tpl }) => (
-              <button
+        {/* ─── Prompt Card ────────────────────────────────── */}
+        <div
+          className="mt-10 w-full max-w-3xl rounded-3xl
+                     bg-light-card dark:bg-white/10
+                     backdrop-blur-md
+                     border border-light-border dark:border-white/20
+                     p-8 shadow-2xl"
+        >
+          {/* Templates Panel */}
+            <details className="w-full mb-4 group">
+            <summary className=" flex items-center justify-between cursor-pointer
+                                rounded-lg
+                                bg-gray-300 dark:bg-white/10
+                                border border-gray-400 dark:border-white/20
+                                shadow-sm
+                                p-3
+                                hover:bg-gray-400 dark:hover:bg-white/20
+                                transition">
+              <span className="font-medium text-gray-900 dark:text-gray-200"> Templates </span>
+              <svg
+                className="h-5 w-5 text-gray-600 dark:text-gray-400 transition-transform group-open:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </summary>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                { name: "Art", tpl: "{subject} {medium} {style} {lighting} {composition}" },
+                { name: "Story", tpl: "{protagonist} {goal} {conflict} {setting}" },
+                { name: "Code", tpl: "{language} script to {task} using {libraries}" },
+                { name: "Blog", tpl: "{topic} blog post with {tone} tone and {keywords}" },
+                { name: "Email", tpl: "Write an email to {recipient} about {subject}" },
+                { name: "Ad", tpl: "Create a marketing ad for {product} highlighting {benefits}" },
+                { name: "Explain", tpl: "Explain {concept} as if teaching a beginner" },
+                { name: "Debug", tpl: "Debug the following code snippet: {code}" },
+                { name: "Translate", tpl: "Translate this text to {language}" },
+                {
+                  name: "Analysis", 
+                  tpl: "Analyze the following data and summarize insights: {data}",
+                },
+                { name: "Poetry", tpl: "Write a {form} poem about {theme} with {style}" },
+              ].map(({ name, tpl }) => (
+                <button
                 key={name}
                 onClick={() => setRaw(tpl)}
-                className="text-sm text-gray-100 px-2 py-1 rounded-md bg-white/5 hover:bg-accent/20 transition"
+                className={`
+                  text-sm font-medium px-2 py-1 rounded-md transition
+                  bg-white text-gray-900 border border-gray-700 hover:bg-gray-100
+                  dark:bg-white/5 dark:text-gray-100 dark:hover:bg-accent/20 dark:border-none
+                  `}
               >
-                {name}
-              </button>
-            ))}
-          </div>
-          <div className="mt-4 border-t border-white/20" />
-          <div className="mt-2 flex justify-center">
-            <button
-              onClick={() => setRaw("")}
-              className="text-sm text-red-300 px-4 py-2 rounded-full border border-red-300 hover:bg-red-500/20 transition"
-            >
-              Clear
-            </button>
-          </div>
-        </details>
-
-        <label htmlFor="raw" className="block text-left font-medium mb-2">
-          ✍️ Your Prompt
-        </label>
-        <textarea
-          id="raw"
-          value={raw}
-          onChange={(e) => setRaw(e.target.value)}
-          placeholder="e.g. 'draw a fantasy landscape'"
-          className="w-full rounded-lg p-4 bg-black/40 border border-white/10"
-          rows={3}
-        />
-
-        {/* Style Controls */}
-        <div className="mt-4 flex flex-wrap gap-4 items-center">
-          <div className="flex flex-wrap gap-2">
-            {[
-              "cinematic",
-              "technical",
-              "poetic",
-              "concise",
-              "dramatic",
-              "detailed",
-              "minimalist",
-              "conversational",
-              "narrative",
-              "descriptive",
-            ].map((t) => {
-              const selected = tones.includes(t);
-              const label = t.charAt(0).toUpperCase() + t.slice(1);
-              return (
-                <button
-                  key={t}
-                  onClick={() =>
-                    selected ? setTones(tones.filter((x) => x !== t)) : setTones([...tones, t])
-                  }
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-                    selected ? "bg-accent text-black" : "bg-white/10 text-gray-200 hover:bg-white/20"
-                  }`}
-                >
-                  {label}
+                  {name}
                 </button>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-300 font-medium">No Fluff</span>
+              ))}
+            </div>
+            <div className="mt-2 flex justify-center">
+            <button
+                onClick={() => setRaw("")}
+                className="text-sm text-red-700 dark:text-red-300
+                  px-4 py-2 rounded-full
+                  border border-red-700 dark:border-red-300
+                  hover:bg-red-700/30 dark:hover:bg-red-500/20
+                  transition
+                "
+              >
+                Clear
+              </button>
+            </div>
+          </details>
+
+          {/* Input */}
+          <textarea
+            id="raw"
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder="e.g. 'draw a fantasy landscape'"
+            rows={3}
+            className="
+              w-full rounded-lg p-4
+              bg-white/70 dark:bg-black/40
+              border border-light-border dark:border-white/10
+            "
+          />
+
+          {/* Style Controls */}
+          <div className="mt-4 flex flex-wrap gap-4 items-center">
+            {/* Tone buttons with deeper purple in light mode */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                "cinematic",
+                "technical",
+                "poetic",
+                "concise",
+                "dramatic",
+                "detailed",
+                "minimalist",
+                "conversational",
+                "narrative",
+                "descriptive",
+              ].map((t) => {
+                const selected = tones.includes(t);
+                const label = t.charAt(0).toUpperCase() + t.slice(1);
+              
+                return (
+                  <button
+                    key={t}
+                    onClick={() =>
+                      selected
+                        ? setTones(tones.filter((x) => x !== t))
+                        : setTones([...tones, t])
+                    }
+                    className={`
+                      /* Base styling */
+                      px-3 py-1 rounded-full text-sm font-medium transition
+              
+                      /* Light-mode look */
+                      ${
+                        selected
+                          ? "bg-gray-700 text-white border border-black hover:bg-gray-800"
+                          : "bg-gray-100 text-gray-900 border border-black hover:bg-gray-200"
+                      }
+              
+                      /* Dark-mode look */
+                      ${
+                        selected
+                          ? "dark:bg-accent dark:text-white"
+                          : "dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                      }
+              
+                      /* Common */
+                      dark:border-none
+                    `}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* No-Fluff Toggle */}
+            <div className="flex items-center gap-3">
+            <span className="text-sm text-light-text dark:text-gray-300 font-medium">
+              No Fluff
+            </span>
             <button
               onClick={() => setNoFluff(!noFluff)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${
-                noFluff ? "bg-accent" : "bg-white/20"
-              }`}
+              className={`
+                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full
+                transition-colors duration-300 ease-in-out focus:outline-none
+                ${noFluff
+                  ? "bg-gray-700"                /* light-mode ON track */
+                  : "bg-white border border-gray-700" /* light-mode OFF track */
+                }
+                ${noFluff
+                  ? "dark:bg-accent"            /* dark-mode ON */
+                  : "dark:bg-white/20"          /* dark-mode OFF */
+                }
+              `}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                  noFluff ? "translate-x-5" : "translate-x-1"
-                }`}
+                className={`
+                  inline-block h-5 w-5 transform rounded-full
+                  ${noFluff
+                    ? "bg-white shadow"          /* light-mode ON thumb */
+                    : "bg-gray-700 shadow"       /* light-mode OFF thumb */
+                  }
+                  dark:bg-white dark:shadow     /* dark-mode thumb always white */
+                  transition-transform duration-300 ease-in-out
+                  ${noFluff ? "translate-x-5" : "translate-x-1"}
+                `}
               />
             </button>
           </div>
+          </div>
+
+          {/* Enhance */}
+          <button
+            onClick={handleEnhance}
+            className={`
+              mt-6 w-full py-3 rounded-xl font-semibold transition
+              bg-gray-700 text-white hover:bg-gray-800
+              dark:bg-accent dark:text-black dark:hover:bg-accent/80
+            `}
+            > Enhance </button>
+
+          {/* Preview */}
+          {enhanced && (
+            <pre
+            className="
+             mt-8 whitespace-pre-wrap text-left
+             bg-gray-100 text-gray-900 border border-gray-300
+             dark:bg-black/30 dark:text-gray-100 dark:border-none
+             p-4 rounded-xl shadow-sm ">
+             {enhanced}
+            </pre>
+          )}
         </div>
-
-        <button
-          onClick={handleEnhance}
-          className="mt-6 w-full py-3 rounded-xl bg-accent hover:bg-accent/80 font-semibold transition"
-        >
-          Enhance ✨
-        </button>
-
-        {enhanced && (
-          <pre className="mt-8 whitespace-pre-wrap text-left bg-black/30 p-4 rounded-xl">
-            {enhanced}
-          </pre>
-        )}
-      </div>
+      </section>
 
       {/* History */}
       <section className="w-full max-w-3xl mt-12">
@@ -206,6 +287,7 @@ export default function HomeClient() {
             Clear All
           </button>
         </div>
+
         {history.length === 0 ? (
           <p className="text-gray-400 text-sm">No history yet.</p>
         ) : (
@@ -213,18 +295,23 @@ export default function HomeClient() {
             {history.map(({ raw, enhanced, timestamp }, i) => (
               <li
                 key={timestamp + i}
-                className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition"
+                className="
+                  p-4 rounded-lg
+                  bg-light-card hover:bg-light-card/70
+                  dark:bg-white/5 dark:hover:bg-white/10
+                  transition
+                "
               >
                 <div className="text-xs text-gray-400">
                   {new Date(timestamp).toLocaleString()}
                 </div>
                 <div className="mt-1">
                   <strong className="text-sm">Input:</strong>
-                  <p className="pl-2 text-gray-200">{raw}</p>
+                  <p className="pl-2 text-light-text dark:text-gray-200">{raw}</p>
                 </div>
                 <div className="mt-1">
                   <strong className="text-sm">Enhanced:</strong>
-                  <p className="pl-2 text-gray-100">{enhanced}</p>
+                  <p className="pl-2 text-light-text dark:text-gray-100">{enhanced}</p>
                 </div>
               </li>
             ))}

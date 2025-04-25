@@ -2,7 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* project‑wide tweaks */
+/* ─── Light theme (default) ────────────────────── */
 html {
-  @apply bg-base text-white scroll-smooth;
+  @apply bg-light-bg text-light-text scroll-smooth;
+}
+
+/* ─── Dark override ────────────────────────────── */
+html.dark {
+  @apply bg-base text-white;
 }
