@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ClipboardCopy, Check } from "lucide-react";
 
 interface HistoryEntry {
   raw: string;
@@ -11,6 +12,8 @@ interface HistoryEntry {
 export default function HomeClient() {
   const [raw, setRaw] = useState("");
   const [enhanced, setEnhanced] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number|null>(null);
   const [tones, setTones] = useState<string[]>(["cinematic"]);
   const [noFluff, setNoFluff] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -20,6 +23,21 @@ export default function HomeClient() {
     if (stored) setHistory(JSON.parse(stored));
   }, []);
 
+  //Function copy
+  function handleCopy() {
+    navigator.clipboard.writeText(enhanced);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  // History copy
+  function handleHistoryCopy(text: string, index: number) {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  }
+
+  
   async function handleEnhance() {
     setEnhanced("");
     const res = await fetch("/api/enhance", {
@@ -53,11 +71,12 @@ export default function HomeClient() {
     <main className="min-h-screen flex flex-col items-center px-6">
       {/* ─── Hero ───────────────────────────────────────── */}
       <section className="relative w-full pt-28 pb-20 flex flex-col items-center text-center">
-        <div
-          className="absolute inset-0 -z-10
-                     bg-gradient-to-br from-accent/30 via-fuchsia-500/10 to-cyan-500/10
-                     blur-3xl"
-        />
+      <div className="absolute inset-0 -z-10
+            bg-gradient-to-br
+              from-accent/30 
+              via-accent-light/10 
+              to-accent-dark/10
+            blur-3xl"></div>
         <h1 className="text-5xl font-extrabold tracking-tight drop-shadow-lg">
           Prompt<span className="text-accent">Forge</span>
         </h1>
@@ -261,17 +280,40 @@ export default function HomeClient() {
 
           {/* Preview */}
           {enhanced && (
-            <pre
-            className="
-             mt-8 whitespace-pre-wrap text-left
-             bg-gray-100 text-gray-900 border border-gray-300
-             dark:bg-black/30 dark:text-gray-100 dark:border-none
-             p-4 rounded-xl shadow-sm ">
-             {enhanced}
-            </pre>
-          )}
-        </div>
-      </section>
+              <div className="mt-8 w-full max-w-3xl">
+                 <div className="relative bg-light-card dark:bg-black/30 p-4 rounded-xl">
+          {/* Copy button inside the box */}
+              <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 flex items-center gap-2 px-2 py-1 rounded
+          bg-gray-700 text-white hover:bg-gray-800
+          dark:bg-white/20 dark:text-white dark:hover:bg-white/30
+          transition"
+                title="Copy to clipboard">
+                {copied ? (
+                  <>
+                    <Check className="h-5 w-5" />
+                    <span className="text-sm">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <ClipboardCopy className="h-5 w-5" />
+                    <span className="text-sm">Copy</span>
+                  </>
+                )}
+              </button>
+
+          {/* Push the text down below the button */}
+              <div className="pt-8">
+                <pre className="whitespace-pre-wrap text-left">
+                  {enhanced}
+                </pre>
+              </div>
+             </div>
+            </div>
+                )}
+            </div>
+        </section>
 
       {/* History */}
       <section className="w-full max-w-3xl mt-12">
@@ -310,8 +352,25 @@ export default function HomeClient() {
                   <p className="pl-2 text-light-text dark:text-gray-200">{raw}</p>
                 </div>
                 <div className="mt-1">
-                  <strong className="text-sm">Enhanced:</strong>
-                  <p className="pl-2 text-light-text dark:text-gray-100">{enhanced}</p>
+                  <div className="flex items-center justify-between">
+                    <strong className="text-sm">Enhanced:</strong>
+                    <button
+                      onClick={() => handleHistoryCopy(enhanced, i)}
+                      className="
+                        flex items-center p-1 rounded
+                        bg-gray-700 text-white hover:bg-gray-800
+                        dark:bg-white/20 dark:text-white dark:hover:bg-white/30
+                        transition"
+                      title="Copy to clipboard"
+                    >
+                      {copiedIndex === i ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <ClipboardCopy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 pl-2 text-light-text dark:text-gray-100">{enhanced}</p>
                 </div>
               </li>
             ))}

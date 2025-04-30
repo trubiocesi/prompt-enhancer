@@ -5,12 +5,15 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { supabaseClient } from "../../lib/supabaseClient";
-
-// Icons  →  npm install lucide-react
-import { User as UserIcon, LogOut, Settings, Sun, Moon } from "lucide-react";
+import {
+  User as UserIcon,
+  LogOut,
+  Settings,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 export default function AuthBar() {
-  /* ───── State ─────────────────────────────────────── */
   const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState<boolean>(() =>
@@ -18,25 +21,22 @@ export default function AuthBar() {
       ? true
       : localStorage.getItem("theme") !== "light"
   );
-  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  /* ───── Supabase auth listener ────────────────────── */
   useEffect(() => {
     supabaseClient.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
     });
-
-    const { data: listener } = supabaseClient.auth.onAuthStateChange(
-      (_evt, session) => {
+    const { data: sub } = supabaseClient.auth.onAuthStateChange(
+      (_e, session) => {
         setUser(session?.user ?? null);
         if (!session?.user) router.push("/login");
       }
     );
-    return () => listener.subscription.unsubscribe();
+    return () => sub.subscription.unsubscribe();
   }, [router]);
 
-  /* ───── Theme sync (html.dark + localStorage) ─────── */
   useEffect(() => {
     const root = document.documentElement;
     if (dark) {
@@ -48,7 +48,6 @@ export default function AuthBar() {
     }
   }, [dark]);
 
-  /* ───── Close menu on outside click / Esc ─────────── */
   useEffect(() => {
     if (!open) return;
     function close(e: MouseEvent | KeyboardEvent) {
@@ -68,119 +67,144 @@ export default function AuthBar() {
     };
   }, [open]);
 
-  /* ───── Handlers ──────────────────────────────────── */
   const handleSignOut = useCallback(async () => {
     await supabaseClient.auth.signOut();
-    // auth listener will redirect
   }, []);
 
   if (!user) return null;
 
-  /* ───── UI ────────────────────────────────────────── */
+  const tier =
+    (user.user_metadata.subscription_tier as "free" | "premium") || "free";
+  const creditsRem = user.user_metadata.credits_remaining ?? 0;
+  const creditsMax = user.user_metadata.credits_limit ?? 0;
+
   return (
-    <div className="fixed top-4 right-4 z-50 pointer-events-auto">
-      {/* Profile icon button */}
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="
-          h-8 w-8 flex items-center justify-center rounded-full
-          bg-gray-200 dark:bg-white/10
-          text-gray-800 dark:text-gray-200
-          hover:bg-gray-300 dark:hover:bg-white/20
-          focus:outline-none focus:ring-2 focus:ring-accent
-        "
+    <div className="fixed top-4 right-4 z-50 flex items-center space-x-2 pointer-events-auto">
+      {/* Tier badge */}
+      <span
+        className={`
+          text-xs font-medium px-2 py-0.5 rounded-full
+          ${tier === "premium"
+            ? "bg-green-100 text-green-800"
+            : "bg-yellow-100 text-yellow-800"}
+        `}
       >
+        {tier === "premium"
+          ? "Premium • ∞"
+          : `Free • ${creditsRem}/${creditsMax}`}
+      </span>
 
-
-        {user.user_metadata?.avatar_url ? (
-          <Image
-            src={user.user_metadata.avatar_url}
-            alt="Avatar"
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
-        ) : (
-          <UserIcon className="h-5 w-5" />
-        )}
-      </button>
-
-      {/* Dropdown menu */}
-      {open && (
-        <div
-          ref={menuRef}
+      {/* Avatar + dropdown wrapper */}
+      <div className="relative">
+        <button
+          onClick={() => setOpen(!open)}
           className="
-            absolute mt-2 right-0 w-48 rounded-md
-            bg-light-card dark:bg-white/10
-            backdrop-blur-md
-            border border-gray-300 dark:border-white/20
-            shadow-lg py-1"
+            h-8 w-8 flex items-center justify-center rounded-full
+            bg-gray-200 dark:bg-white/10
+            text-gray-800 dark:text-gray-200
+            hover:bg-gray-300 dark:hover:bg-white/20
+            focus:outline-none focus:ring-2 focus:ring-accent
+          "
         >
+          {user.user_metadata?.avatar_url ? (
+            <Image
+              src={user.user_metadata.avatar_url}
+              alt="Avatar"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+          ) : (
+            <UserIcon className="h-5 w-5" />
+          )}
+        </button>
 
-          {/* Username header */}
-          <div className="px-3 py-2 text-sm text-light-text dark:text-gray-200 border-b border-gray-300 dark:border-white/20">
-            {(user.email ?? "User").split("@")[0]}
-          </div>
-
-          {/* Account Settings */}
-          <button
-            onClick={() => {
-              setOpen(false);
-              router.push("/profile");
-            }}
-            className="
-            w-full flex items-center px-3 py-2 text-sm
-            text-light-text dark:text-gray-200
-            hover:bg-light-card/70 dark:hover:bg-white/20
-            focus:outline-none"
-            >
-            <Settings className="h-4 w-4 mr-2" />
-            Account&nbsp;Settings
-          </button>
-          {/* Theme toggle */}
+        {open && (
           <div
+            ref={menuRef}
             className="
-              w-full px-3 py-2 text-sm flex items-center justify-between
-              text-light-text dark:text-gray-200
-              hover:bg-light-card dark:hover:bg-white/20
-              transition
+              absolute top-full mt-2 right-0 w-52 rounded-md
+              bg-white dark:bg-white/10
+              border border-gray-300 dark:border-white/20
+              shadow-lg py-1
             "
           >
-            <span>Theme</span>
+            {/* Username header */}
+            <div className="px-3 py-2 text-sm text-gray-900 dark:text-gray-200 border-b border-gray-300 dark:border-white/20">
+              {(user.email ?? "User").split("@")[0]}
+            </div>
+
+            {/* Redesigned Tier line */}
+            <div className="px-3 py-2 flex items-center space-x-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Tier:
+              </span>
+              <span
+                className={`
+                  text-sm font-medium px-2 py-1 rounded-full
+                  ${tier === "premium"
+                    ? "bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    : "bg-yellow-50 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"}
+                `}
+              >
+                {tier === "premium"
+                  ? "Premium (Unlimited)"
+                  : `Free (${creditsRem}/${creditsMax} left)`}
+              </span>
+            </div>
+
+            {/* Theme toggle */}
+            <div className="w-full px-3 py-2 flex items-center justify-between text-light-text dark:text-gray-200 hover:bg-light-card dark:hover:bg-white/20">
+              <span>Theme</span>
+              <button
+                onClick={() => setDark(!dark)}
+                className="h-7 w-7 flex items-center justify-center rounded-full bg-gray-300 dark:bg-white/10 text-light-text dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-white/20 transition focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </button>
+            </div>
+
+            {/* Account Settings */}
             <button
-              onClick={() => setDark(!dark)}
-              className="
-                h-7 w-7 flex items-center justify-center rounded-full
-                bg-gray-300 dark:bg-white/10
-                text-light-text dark:text-gray-200
-                hover:bg-gray-400 dark:hover:bg-white/20
-                transition duration-300 ease-in-out
-                focus:outline-none focus:ring-2 focus:ring-accent
-              "
+              onClick={() => {
+                setOpen(false);
+                router.push("/profile");
+              }}
+              className="w-full flex items-center px-3 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/20"
             >
-              {dark ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
+              <Settings className="h-4 w-4 mr-2" />
+              Account Settings
+            </button>
+
+            {/* Upgrade CTA (free only) */}
+            {tier === "free" && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/billing");
+                }}
+                className="
+                  w-full text-center px-3 py-2 text-sm
+                  bg-gray-700 text-white hover:bg-gray-800
+                  dark:bg-accent dark:text-black dark:hover:bg-accent/80
+                  rounded-md
+                "
+              >
+                Upgrade to Premium →
+              </button>
+            )}
+
+            {/* Sign Out */}
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center px-3 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
             </button>
           </div>
-
-          {/* Sign Out */}
-          <button
-            onClick={handleSignOut}
-            className="
-            w-full flex items-center px-3 py-2 text-sm
-            text-red-600 dark:text-red-400
-            hover:bg-red-500/10 dark:hover:bg-red-500/20
-            focus:outline-none"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign&nbsp;Out
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

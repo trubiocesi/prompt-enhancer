@@ -1,25 +1,30 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: [
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}"
+  ],
   theme: {
     extend: {
       backdropBlur: { xs: "2px" },
       colors: {
-        accent: "#9F7BFF",
+               accent: {
+                   DEFAULT: "#FF6F61",  // Warm Coral base
+                   dark:    "#E65A50",  // deeper coral on hover/dark uses
+                   light:   "#FFD8D2"   // soft tint for gradients
+                 },
 
-        /* Dark default (base) */
-        base: "#0d0d12",
+        base: "#0d0d12",      // your existing dark-ground
 
-        /* Light theme palette */
         light: {
-          bg:     "#F9FAFB",           // page background
-          card:   "rgba(255,255,255,0.8)", // translucent white cards
-          text:   "#1A1A1A",           // primary text
-          border: "rgba(0,0,0,0.12)",  // subtle borders
-        },
-      },
-    },
+          bg:     "#F9FAFB",
+          card:   "rgba(255,255,255,0.8)",
+          text:   "#1A1A1A",
+          border: "rgba(0,0,0,0.12)"
+        }
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 };
