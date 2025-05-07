@@ -96,7 +96,7 @@ function UserProfileNav({
         return (
           <button
             key={key}
-            onClick={() => setTab(key as any)}
+            onClick={() => setTab(key as "profile" | "subscription")}
             className={`
               flex items-center w-full px-4 py-2 rounded-lg text-sm font-medium transition
               ${active
