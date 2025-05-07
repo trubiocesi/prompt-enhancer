@@ -122,8 +122,21 @@ function UserProfileNav({
   );
 }
 
+type UserType = {
+    email?: string;
+    user_metadata?: {
+      avatar_url?: string;
+      full_name?: string;
+      display_name?: string;
+      subscription_tier?: string;
+      credits_remaining?: number;
+      credits_limit?: number;
+    };
+  };
+
 function ProfileDashboard() {
-  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [sessionUser, setSessionUser] = useState<UserType | null>(null);
+
 
   // persisted display
   const [savedName, setSavedName] = useState("");
@@ -425,40 +438,6 @@ function CardHeader({ title }: { title: string }) {
 
 function CardFooter({ children }: React.PropsWithChildren) {
   return <div className="pt-4 border-t border-gray-200 dark:border-white/10">{children}</div>;
-}
-
-function Field({
-  label,
-  defaultValue,
-  readOnly,
-  actionLabel,
-}: {
-  label: string;
-  defaultValue?: string;
-  readOnly?: boolean;
-  actionLabel?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm text-light-text dark:text-gray-200">
-        {label}
-      </label>
-      <div className="mt-1 flex items-center">
-        <input
-          type="text"
-          defaultValue={defaultValue}
-          readOnly={readOnly}
-          className={`flex-1 rounded-md bg-light-bg border border-light-border p-2 text-light-text focus:ring-accent
-             dark:bg-black/40 dark:border-white/20 dark:text-white`}
-        />
-        {actionLabel && (
-          <button className="ml-4 text-sm text-accent hover:underline dark:text-accent-light">
-            {actionLabel}
-          </button>
-        )}
-      </div>
-    </div>
-  );
 }
 
 // ——— Toast Component ———
