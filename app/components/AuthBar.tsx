@@ -15,6 +15,7 @@ import {
 
 export default function AuthBar() {
   const [user, setUser] = useState<User | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState<boolean>(() =>
     typeof window === "undefined"
@@ -24,19 +25,19 @@ export default function AuthBar() {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Load session and persisted display name
   useEffect(() => {
     supabaseClient.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
     });
-    const { data: sub } = supabaseClient.auth.onAuthStateChange(
-      (_e, session) => {
-        setUser(session?.user ?? null);
-        if (!session?.user) router.push("/login");
-      }
-    );
-    return () => sub.subscription.unsubscribe();
-  }, [router]);
 
+    const saved = localStorage.getItem("profile_display_name");
+    if (saved) {
+      setDisplayName(saved);
+    }
+  }, []);
+
+  // Theme side-effects
   useEffect(() => {
     const root = document.documentElement;
     if (dark) {
@@ -48,6 +49,7 @@ export default function AuthBar() {
     }
   }, [dark]);
 
+  // Close menu on outside click / Esc
   useEffect(() => {
     if (!open) return;
     function close(e: MouseEvent | KeyboardEvent) {
@@ -73,10 +75,16 @@ export default function AuthBar() {
 
   if (!user) return null;
 
-  const tier =
-    (user.user_metadata.subscription_tier as "free" | "premium") || "free";
+  // Subscription info
+  const tier = (user.user_metadata.subscription_tier as "free" | "premium") || "free";
   const creditsRem = user.user_metadata.credits_remaining ?? 0;
   const creditsMax = user.user_metadata.credits_limit ?? 0;
+
+  // Compute the header name
+  const headerName =
+    displayName ||
+    user.user_metadata.full_name ||
+    (user.email ?? "User").split("@")[0];
 
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center space-x-2 pointer-events-auto">
@@ -89,18 +97,16 @@ export default function AuthBar() {
             : "bg-yellow-100 text-yellow-800"}
         `}
       >
-        {tier === "premium"
-          ? "Premium • ∞"
-          : `Free • ${creditsRem}/${creditsMax}`}
+        {tier === "premium" ? "Premium • ∞" : `Free • ${creditsRem}/${creditsMax}`}
       </span>
 
-      {/* Avatar + dropdown wrapper */}
+      {/* Avatar + dropdown */}
       <div className="relative">
         <button
           onClick={() => setOpen(!open)}
           className="
             h-8 w-8 flex items-center justify-center rounded-full
-            bg-gray-200 dark:bg-white/10
+            bg-gray-200 dark:bg-[#1E1E2A]
             text-gray-800 dark:text-gray-200
             hover:bg-gray-300 dark:hover:bg-white/20
             focus:outline-none focus:ring-2 focus:ring-accent
@@ -124,21 +130,19 @@ export default function AuthBar() {
             ref={menuRef}
             className="
               absolute top-full mt-2 right-0 w-52 rounded-md
-              bg-white dark:bg-white/10
+              bg-white dark:bg-[#1E1E2A]
               border border-gray-300 dark:border-white/20
               shadow-lg py-1
             "
           >
-            {/* Username header */}
+            {/* Header: Display Name */}
             <div className="px-3 py-2 text-sm text-gray-900 dark:text-gray-200 border-b border-gray-300 dark:border-white/20">
-              {(user.email ?? "User").split("@")[0]}
+              {headerName}
             </div>
 
-            {/* Redesigned Tier line */}
+            {/* Tier & Credits */}
             <div className="px-3 py-2 flex items-center space-x-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Tier:
-              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Tier:</span>
               <span
                 className={`
                   text-sm font-medium px-2 py-1 rounded-full
@@ -158,7 +162,13 @@ export default function AuthBar() {
               <span>Theme</span>
               <button
                 onClick={() => setDark(!dark)}
-                className="h-7 w-7 flex items-center justify-center rounded-full bg-gray-300 dark:bg-white/10 text-light-text dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-white/20 transition focus:outline-none focus:ring-2 focus:ring-accent"
+                className="
+                  h-7 w-7 flex items-center justify-center rounded-full
+                  bg-gray-300 dark:bg-[#1E1E2A]
+                  text-light-text dark:text-gray-200
+                  hover:bg-gray-400 dark:hover:bg-white/20
+                  transition focus:outline-none focus:ring-2 focus:ring-accent
+                "
               >
                 {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               </button>
@@ -168,7 +178,7 @@ export default function AuthBar() {
             <button
               onClick={() => {
                 setOpen(false);
-                router.push("/profile");
+                router.push("/account?tab=profile");
               }}
               className="w-full flex items-center px-3 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/20"
             >
@@ -176,12 +186,12 @@ export default function AuthBar() {
               Account Settings
             </button>
 
-            {/* Upgrade CTA (free only) */}
+            {/* Upgrade CTA */}
             {tier === "free" && (
               <button
                 onClick={() => {
                   setOpen(false);
-                  router.push("/billing");
+                  router.push("/account?tab=subscription");
                 }}
                 className="
                   w-full text-center px-3 py-2 text-sm

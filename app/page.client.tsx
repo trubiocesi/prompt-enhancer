@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ClipboardCopy, Check } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface HistoryEntry {
   raw: string;
@@ -10,6 +11,7 @@ interface HistoryEntry {
 }
 
 export default function HomeClient() {
+  const [showMiniTitle, setShowMiniTitle] = useState(false);
   const [raw, setRaw] = useState("");
   const [enhanced, setEnhanced] = useState("");
   const [copied, setCopied] = useState(false);
@@ -21,6 +23,14 @@ export default function HomeClient() {
   useEffect(() => {
     const stored = localStorage.getItem("promptHistory");
     if (stored) setHistory(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowMiniTitle(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   //Function copy
@@ -69,6 +79,22 @@ export default function HomeClient() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-6">
+      {showMiniTitle && (
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="fixed top-4 left-4 z-50
+                  flex items-center justify-center
+                  px-4 py-2 rounded-full font-bold text-xl
+                  bg-white text-gray-900 border border-gray-300 shadow
+                  dark:bg-[#1E1E2A] dark:text-white dark:border-white/20
+                  hover:scale-105 hover:shadow-md transition"
+        title="Back to top"
+      >
+        <span className="text-white dark:text-white">P</span>
+        <span className="text-accent ml-1">R</span>
+      </button>
+    )}
+
       {/* ─── Hero ───────────────────────────────────────── */}
       <section className="relative w-full pt-28 pb-20 flex flex-col items-center text-center">
       <div className="absolute inset-0 -z-10
@@ -77,9 +103,29 @@ export default function HomeClient() {
               via-accent-light/10 
               to-accent-dark/10
             blur-3xl"></div>
-        <h1 className="text-5xl font-extrabold tracking-tight drop-shadow-lg">
-          Prompt<span className="text-accent">Forge</span>
-        </h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-5xl font-extrabold tracking-tight drop-shadow-lg"
+        >
+          <motion.span
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="inline-block text-white dark:text-white"
+          >
+            Prompt
+          </motion.span>
+          <motion.span
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="inline-block text-accent"
+          >
+            Reforge
+          </motion.span>
+        </motion.h1>
         {/* Darker tagline text in light mode */}
         <p className="mt-4 max-w-xl text-lg text-light-text dark:text-gray-300">
           Turn rough ideas into laser-focused AI prompts with a single click.
