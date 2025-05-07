@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -135,7 +136,8 @@ type UserType = {
   };
 
 function ProfileDashboard() {
-  const [sessionUser, setSessionUser] = useState<UserType | null>(null);
+  const [sessionUser, setSessionUser] = useState<User | null>(null);
+
 
 
   // persisted display
