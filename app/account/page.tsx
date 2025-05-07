@@ -13,8 +13,12 @@ import { supabaseClient } from "../../lib/supabaseClient";
 export default function AccountPage() {
   const handleGoHome = () => router.push("/");
   const router = useRouter();
-  const params = useSearchParams();
-  const initial = params.get("tab") === "subscription" ? "subscription" : "profile";
+  useEffect(() => {
+    const tabParam = new URLSearchParams(window.location.search).get("tab");
+    setTab(tabParam === "subscription" ? "subscription" : "profile");
+  }, []);
+  const tabParam = new URLSearchParams(window.location.search).get("tab");
+  const initial = tabParam === "subscription" ? "subscription" : "profile";
   const [tab, setTab] = useState<"profile" | "subscription">(initial);
 
   useEffect(() => {
